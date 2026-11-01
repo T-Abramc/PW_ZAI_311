@@ -80,7 +80,7 @@ namespace PW_ZAI_311.Entieties
         public string EntityInfo { get; set; }
         public string ErrorCode { get; set; }
 
-        private Log(uint httpValue, bool isError, string actionInfo, string entityInfo, string errorCode): base()
+        private Log(uint httpValue, bool isError, string actionInfo, string entityInfo, string errorCode) : base()
         {
             HttpValue = httpValue;
             IsError = isError;
@@ -116,5 +116,6 @@ namespace PW_ZAI_311.Entieties
                 errorCode: $"ErrorType: {typeof(TError).Name} | Message: {errorString} | ErrorDetails: {serializedError}"
             );
         }
+    }
 
 }
