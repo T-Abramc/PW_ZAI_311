@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Cqrs" Version="6.0.0.76" />
     <PackageReference Include="MediatR" Version="14.2.0" />
+    <PackageReference Include="MongoDB.EntityFrameworkCore" Version="8.3.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 

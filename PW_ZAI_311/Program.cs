@@ -1,6 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver.Core.Configuration;
+using PW_ZAI_311.configuration;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var  connectionString = builder.Configuration.GetConnectionString("MongoDb");
+var databaseName = builder.Configuration.GetValue<string>("DatabaseName");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseMongoDB(connectionString, databaseName));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

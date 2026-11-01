@@ -1,6 +1,7 @@
 ﻿using Cqrs.Commands;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using PW_ZAI_311.configuration;
 using System.Windows.Input;
 
 namespace PW_ZAI_311.Controllers.Domain
@@ -9,16 +10,18 @@ namespace PW_ZAI_311.Controllers.Domain
 
     public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Guid>
     {
-        private readonly DbContext _dbContext;
-        public CreateUserCommandHandler(DbContext dbContext) 
+        private readonly AppDbContext _dbContext;
+        public CreateUserCommandHandler(
+            AppDbContext dbContext
+            )
         {
             _dbContext = dbContext;
         }
 
         public Task<Guid> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
-            // _dbContext
-            Guid generatedUserId = Guid.NewGuid();
+            var p = _dbContext.Products.Find();
+           Guid generatedUserId = Guid.NewGuid();
 
             return Task.FromResult(generatedUserId);
         }

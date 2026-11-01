@@ -8,15 +8,13 @@ namespace PW_ZAI_311.Controllers
     [Route("[controller]")]
     public class ComunicationController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
 
         private readonly ILogger<ComunicationController> _logger;
         private readonly IMediator _mediator;
+
         public ComunicationController(ILogger<ComunicationController> logger,
-                                      IMediator mediator)
+                                      IMediator mediator
+            )
         {
             _logger = logger;
             _mediator =  mediator;  
@@ -29,7 +27,6 @@ namespace PW_ZAI_311.Controllers
             {
                 Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                 TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
         }
