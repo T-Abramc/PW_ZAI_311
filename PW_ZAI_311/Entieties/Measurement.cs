@@ -9,7 +9,7 @@ namespace PW_ZAI_311.Entieties
         public Guid Id { get; set; }
         public DateTime CreationDataTime { get; set; }
 
-        public AgregatRoot()
+        public AgregatRoot() 
         {
             Id = Guid.NewGuid();
             CreationDataTime = DateTime.Now;
@@ -21,10 +21,15 @@ namespace PW_ZAI_311.Entieties
         public string Nuame { get; set; }
         public uint MeasurementsNumber { get; private set; }
 
-        public Sensor(string nuame) : base()
+        public Guid MeasurementSerieId { get; set; }
+        public MeasurementSerie MeasurementSerie { get; set; }
+        public Sensor() : base() { }
+
+        public Sensor(string nuame, MeasurementSerie measurementSerie) : this()
         {
             Nuame = nuame;
             MeasurementsNumber = 0;
+            MeasurementSerie = measurementSerie;
         }
         public List<Measurement> AddMeasurements(List<(Sensor sensor, float value, DateTime dateTime, MeasurementSerie measurementSerie)> measurements) 
         {
@@ -48,8 +53,9 @@ namespace PW_ZAI_311.Entieties
         public Guid MeasurementSerieId { get; set; }
         public MeasurementSerie MeasurementSerie { get; set; }
 
+        public Measurement() : base() { }
 
-        public Measurement(Sensor sensor, float value, DateTime dateTime) : base()
+        public Measurement(Sensor sensor, float value, DateTime dateTime) : this()
         {
             Sensor = sensor;
             Value = value;
@@ -71,6 +77,22 @@ namespace PW_ZAI_311.Entieties
         public float MinValue { get; set; }
         public Color? Color { get; set; }
         public string IconInfo { get; set; }
+        public MeasurementSerie() : base() { }
+
+        public void Edit(string name, float maxValue, float minValue, KnownColor? color, string iconInfo)
+        {
+            Name = name;
+            MaxValue = maxValue;
+            MinValue = minValue;
+
+            if (color.HasValue)
+            {
+                Color = System.Drawing.Color.FromKnownColor(color.Value);
+            }
+
+            IconInfo = iconInfo;
+        }
+
     }
     public class Log : AgregatRoot
     {
@@ -80,7 +102,9 @@ namespace PW_ZAI_311.Entieties
         public string EntityInfo { get; set; }
         public string ErrorCode { get; set; }
 
-        private Log(uint httpValue, bool isError, string actionInfo, string entityInfo, string errorCode) : base()
+        public Log() : base() { }
+
+        private Log(uint httpValue, bool isError, string actionInfo, string entityInfo, string errorCode) : this()
         {
             HttpValue = httpValue;
             IsError = isError;

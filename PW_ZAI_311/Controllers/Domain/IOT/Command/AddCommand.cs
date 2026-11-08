@@ -20,7 +20,7 @@ namespace PW_ZAI_311.Controllers.Domain
 
         public Task<Guid> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
-            var p = _dbContext.Products.Find();
+            var p = _dbContext.Sensors.Find();
            Guid generatedUserId = Guid.NewGuid();
 
             return Task.FromResult(generatedUserId);
