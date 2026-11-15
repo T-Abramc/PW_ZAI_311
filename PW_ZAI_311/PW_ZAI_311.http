@@ -1,6 +1,6 @@
 @PW_ZAI_311_HostAddress = http://localhost:5242
 
-GET {{PW_ZAI_311_HostAddress}}/weatherforecast/
+GET {{PW_ZAI_311_HostAddress}}/App/
 Accept: application/json
 
 ###
