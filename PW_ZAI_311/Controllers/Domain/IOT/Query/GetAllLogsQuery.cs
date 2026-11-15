@@ -14,13 +14,13 @@ namespace PW_ZAI_311.Controllers.Domain.IOT.Query
     string ErrorCode,
     DateTime CreationDataTime);
 
-    public record GetAllLogsQuery() : IRequest<List<LogDto>>;
-    public class GetAllLogsQueryHandler : IRequestHandler<GetAllLogsQuery, List<LogDto>>
+    public record GetAllLogsQuery2() : IRequest<List<LogDto>>;
+    public class GetAllLogsQueryHandler : IRequestHandler<GetAllLogsQuery2, List<LogDto>>
     {
         private readonly AppDbContext _context;
         public GetAllLogsQueryHandler(AppDbContext context) => _context = context;
 
-        public async Task<List<LogDto>> Handle(GetAllLogsQuery request, CancellationToken cancellationToken)
+        public async Task<List<LogDto>> Handle(GetAllLogsQuery2 request, CancellationToken cancellationToken)
         {
             var logs = await _context.Set<Log>().ToListAsync(cancellationToken);
 

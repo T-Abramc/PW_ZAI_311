@@ -44,163 +44,137 @@ namespace PW_ZAI_311.Controllers
         //}
 
 
-        #region Sensor
-        [HttpPost("Sensor")]
-        public async Task<IActionResult> CreateSensor([FromBody] CreateSensorInput input)
-        {
-            var command = new CreateSensorCommand(input.Name, input.MeasurementSerieId);
-            var id = await _mediator.Send(command);
-            return Ok(id);
-        }
-        //[Authorize]
-        [HttpGet("Sensor/{id}")]
-        public async Task<IActionResult> GetSensor(Guid id)
-        {
-            var query = new GetSensorQuery(id);
-            var result = await _mediator.Send(query);
+        //#region Sensor
+        //[HttpPost("Sensor")]
+        //public async Task<IActionResult> CreateSensor([FromBody] CreateSensorInput input)
+        //{
+        //    var command = new CreateSensorCommand(input.Name, input.MeasurementSerieId);
+        //    var id = await _mediator.Send(command);
+        //    return Ok(id);
+        //}
+        ////[Authorize]
+        //[HttpGet("Sensor/{id}")]
+        //public async Task<IActionResult> GetSensor(Guid id)
+        //{
+        //    var query = new GetSensorQuery(id);
+        //    var result = await _mediator.Send(query);
 
-            if (result == null) return NotFound();
-            return Ok(result);
-        }
+        //    if (result == null) return NotFound();
+        //    return Ok(result);
+        //}
 
-        [HttpPut("Sensor/Edit")]
-        public async Task<IActionResult> UpdateSensor([FromBody] UpdateSensorInput input)
-        {
-            var command = new UpdateSensorCommand(input.Id, input.Nuame);
-            await _mediator.Send(command);
-            return NoContent();
-        }
+        //[HttpPut("Sensor/Edit")]
+        //public async Task<IActionResult> UpdateSensor([FromBody] UpdateSensorInput input)
+        //{
+        //    var command = new UpdateSensorCommand(input.Id, input.Nuame);
+        //    await _mediator.Send(command);
+        //    return NoContent();
+        //}
 
-        [HttpDelete("Sensor/{id}")]
-        public async Task<IActionResult> DeleteSensor(Guid id)
-        {
-            var command = new DeleteSensorCommand(id);
-            await _mediator.Send(command);
-            return NoContent();
-        }
-        #endregion
-        #region Measurement 
-        [HttpPost("Measurement")]
-        public async Task<IActionResult> CreateMeasurement([FromBody] CreateMeasurementInput input)
-        {
-            var command = new CreateMeasurementCommand(
-                input.SensorId,
-                input.Value,
-                input.DateTime,
-                input.GroupId,
-                input.MeasurementSerieId);
+        //[HttpDelete("Sensor/{id}")]
+        //public async Task<IActionResult> DeleteSensor(Guid id)
+        //{
+        //    var command = new DeleteSensorCommand(id);
+        //    await _mediator.Send(command);
+        //    return NoContent();
+        //}
+        //#endregion
+        //#region Measurement 
+        //[HttpPost("Measurement")]
+        //public async Task<IActionResult> CreateMeasurement([FromBody] CreateMeasurementInput input)
+        //{
+        //    var command = new CreateMeasurementCommand(
+        //        input.SensorId,
+        //        input.Value,
+        //        input.DateTime,
+        //        input.GroupId,
+        //        input.MeasurementSerieId);
 
-            var id = await _mediator.Send(command);
-            return Ok(id);
-        }
+        //    var id = await _mediator.Send(command);
+        //    return Ok(id);
+        //}
 
-        [HttpGet("Measurement/{id}")]
-        public async Task<IActionResult> GetMeasurement(Guid id)
-        {
-            var query = new GetMeasurementQuery(id);
-            var result = await _mediator.Send(query);
+        //[HttpGet("Measurement/{id}")]
+        //public async Task<IActionResult> GetMeasurement(Guid id)
+        //{
+        //    var query = new GetMeasurementQuery(id);
+        //    var result = await _mediator.Send(query);
 
-            if (result == null) return NotFound();
-            return Ok(result);
-        }
+        //    if (result == null) return NotFound();
+        //    return Ok(result);
+        //}
 
-        #endregion
+        //#endregion
 
-        #region MeasurementSerie  
+        //#region MeasurementSerie  
 
-        [HttpPost("MeasurementSerie")]
-        public async Task<IActionResult> CreateMeasurementSerie([FromBody] CreateMeasurementSerieInput input)
-        {
-            var command = new CreateMeasurementSerieCommand(
-                input.Name,
-                input.MaxValue,
-                input.MinValue,
-                input.Color,
-                input.IconInfo);
+        //[HttpPost("MeasurementSerie")]
+        //public async Task<IActionResult> CreateMeasurementSerie([FromBody] CreateMeasurementSerieInput input)
+        //{
+        //    var command = new CreateMeasurementSerieCommand(
+        //        input.Name,
+        //        input.MaxValue,
+        //        input.MinValue,
+        //        input.Color,
+        //        input.IconInfo);
 
-            var id = await _mediator.Send(command);
-            return Ok(id);
-        }
+        //    var id = await _mediator.Send(command);
+        //    return Ok(id);
+        //}
 
-        [HttpGet("MeasurementSerie/{id}")]
-        public async Task<IActionResult> GetMeasurementSerie(Guid id)
-        {
-            var query = new GetMeasurementSerieQuery(id);
-            var result = await _mediator.Send(query);
+        //[HttpGet("MeasurementSerie/{id}")]
+        //public async Task<IActionResult> GetMeasurementSerie(Guid id)
+        //{
+        //    var query = new GetMeasurementSerieQuery(id);
+        //    var result = await _mediator.Send(query);
 
-            if (result == null) return NotFound();
-            return Ok(result);
-        }
+        //    if (result == null) return NotFound();
+        //    return Ok(result);
+        //}
 
-        [HttpPut("MeasurementSerie/Edit")]
-        public async Task<IActionResult> UpdateMeasurementSerie([FromBody] UpdateMeasurementSerieInput input)
-        {
-            var command = new UpdateMeasurementSerieCommand(
-                input.Id,
-                input.Name,
-                input.MaxValue,
-                input.MinValue,
-                input.ThisColor,
-                input.IconInfo);
+        //[HttpPut("MeasurementSerie/Edit")]
+        //public async Task<IActionResult> UpdateMeasurementSerie([FromBody] UpdateMeasurementSerieInput input)
+        //{
+        //    var command = new UpdateMeasurementSerieCommand(
+        //        input.Id,
+        //        input.Name,
+        //        input.MaxValue,
+        //        input.MinValue,
+        //        input.ThisColor,
+        //        input.IconInfo);
 
-            await _mediator.Send(command);
-            return NoContent();
-        }
+        //    await _mediator.Send(command);
+        //    return NoContent();
+        //}
 
-        [HttpDelete("MeasurementSerie/{id}")]
-        public async Task<IActionResult> DeleteMeasurementSerie(Guid id)
-        {
-            var command = new DeleteMeasurementSerieCommand(id);
-            await _mediator.Send(command);
-            return NoContent();
-        }
-        #endregion
+        //[HttpDelete("MeasurementSerie/{id}")]
+        //public async Task<IActionResult> DeleteMeasurementSerie(Guid id)
+        //{
+        //    var command = new DeleteMeasurementSerieCommand(id);
+        //    await _mediator.Send(command);
+        //    return NoContent();
+        //}
+        //#endregion
 
-        #region System  
-        [HttpGet("Logs")]
-        public async Task<IActionResult> GetAll()
-        {
-            var query = new GetAllLogsQuery();
-            var result = await _mediator.Send(query);
+        //#region System  
+        //[HttpGet("Logs")]
+        //public async Task<IActionResult> GetAll()
+        //{
+        //    var query = new GetAllLogsQuery();
+        //    var result = await _mediator.Send(query);
 
-            return Ok(result);
-        }
-        [HttpGet("Colors")]
-        public async Task<List<ColorOutput>> GetKnownColors()
-        {
-            var knownColors = Enum.GetValues(typeof(KnownColor)).Cast<KnownColor>();
-            return knownColors.Select(kc => new ColorOutput(kc))
-                              .Where(x=> x.A == byte.MaxValue)
-                              .OrderBy(x=> x.B)
-                              .ToList();
-        }
-        #endregion
+        //    return Ok(result);
+        //}
+        //[HttpGet("Colors")]
+        //public async Task<List<ColorOutput>> GetKnownColors()
+        //{
+        //    var knownColors = Enum.GetValues(typeof(KnownColor)).Cast<KnownColor>();
+        //    return knownColors.Select(kc => new ColorOutput(kc))
+        //                      .Where(x=> x.A == byte.MaxValue)
+        //                      .OrderBy(x=> x.B)
+        //                      .ToList();
+        //}
+        //#endregion
     }
+
 }
-
-
-// nie wymaga implementacji 
-
-////[HttpPut("Measurement/Edit")]
-////public async Task<IActionResult> UpdateMeasurement([FromBody] UpdateMeasurementInput input)
-////{
-////    var command = new UpdateMeasurementCommand(
-////        input.Id,
-////        input.SensorId,
-////        input.Value,
-////        input.DateTime,
-////        input.GroupId,
-////        input.MeasurementSerieId);
-
-////    await _mediator.Send(command);
-////    return NoContent();
-////}
-
-////[HttpDelete("Measurement/{id}")]
-////public async Task<IActionResult> DeleteMeasurement(Guid id)
-////{
-////    var command = new DeleteMeasurementCommand(id);
-////    await _mediator.Send(command);
-////    return NoContent();
-////}
-//

@@ -4,7 +4,7 @@ using PW_ZAI_311.Controllers.Domain;
 
 namespace PW_ZAI_311.Controllers.Domains
 {
-    public record GetMeasurementQuery(Guid Id) : IRequest<MeasurementOutput>;
+    public record GetMeasurementQuery2(Guid Id) : IRequest<MeasurementOutput>;
 
     public class MeasurementOutput : BaseOutput
     {
@@ -26,12 +26,12 @@ namespace PW_ZAI_311.Controllers.Domains
         }
     }
 
-    public class GetMeasurementQueryHandler : IRequestHandler<GetMeasurementQuery, MeasurementOutput>
+    public class GetMeasurementQueryHandler : IRequestHandler<GetMeasurementQuery2, MeasurementOutput>
     {
         private readonly AppDbContext _context;
         public GetMeasurementQueryHandler(AppDbContext context) => _context = context;
 
-        public async Task<MeasurementOutput> Handle(GetMeasurementQuery request, CancellationToken cancellationToken)
+        public async Task<MeasurementOutput> Handle(GetMeasurementQuery2 request, CancellationToken cancellationToken)
         {
             var measurement = await _context.Measurements.FindAsync(new object[] { request.Id }, cancellationToken);
             if (measurement == null) return null;

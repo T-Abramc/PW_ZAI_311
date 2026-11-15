@@ -1,29 +1,27 @@
 #region Usings
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver.Core.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
 using PW_ZAI_311.configuration;
 using Microsoft.OpenApi.Models;
 using PW_ZAI_311;
-
+using PW_ZAI_311.Entieties;
+using PW_ZAI_311.Controllers.Domain.IOT.NewCommand.PW_ZAI_311.Application;
 #endregion
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 #region MongoDb
 var connectionString = builder.Configuration.GetConnectionString("MongoDb");
 var databaseName = builder.Configuration.GetValue<string>("DatabaseName");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMongoDB(connectionString, databaseName));
+    options.UseMongoDB(connectionString!, databaseName!));
 #endregion
 
 #region JWT
-var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "TwojBardzoTajnyKluczKtoryMaMinimum16Znakow!");
+// Klucz dla HmacSha256 musi mieæ minimum 32 bajty (256 bitów)
+var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "TwojBardzoTajnyKluczKtoryMaMinimum32ZnakiDlugosci!");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -34,7 +32,43 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(key)
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ClockSkew = TimeSpan.Zero // Token wygasa dok³adnie w momencie okreœlonym przez expiresIn
+        };
+
+        // Obs³uga tokena z bezpiecznego ciasteczka sesyjnego (tylko jeœli brak nag³ówka Authorization: Bearer)
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                // To zostaje tak jak mia³eœ - dzia³a œwietnie dla ciasteczek
+                if (string.IsNullOrEmpty(context.Request.Headers.Authorization) &&
+                    context.Request.Cookies.TryGetValue("jwt_session", out var cookieToken))
+                {
+                    context.Token = cookieToken;
+                }
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                // Pobieramy czysty token string z obiektu SecurityToken
+                string token = string.Empty;
+                if (context.SecurityToken is System.IdentityModel.Tokens.Jwt.JwtSecurityToken jwt)
+                {
+                    token = jwt.RawData;
+                }
+                else if (context.SecurityToken is Microsoft.IdentityModel.JsonWebTokens.JsonWebToken jws)
+                {
+                    token = jws.EncodedToken;
+                }
+
+                // Sprawdzamy czysty token na czarnej liœcie
+                if (TokenBlacklist.IsRevoked(token))
+                {
+                    context.Fail("Token has been logged out.");
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -42,21 +76,28 @@ builder.Services.AddAuthorization();
 #endregion
 
 #region Application Services (MediatR, Swagger, Controllers)
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddMediatR(cfg => {
-    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpaFrontend", policy =>
+    {
+        policy.SetIsOriginAllowed(origin => true) // Zezwala na dowolny adres
+              .AllowAnyHeader()                   
+              .AllowAnyMethod()                   
+              .AllowCredentials();                
+    });
 });
-#endregion
-#region Application Services (MediatR, Swagger, Controllers)
-builder.Services.AddControllers();
+
+builder.Services.AddProblemDetails();
+builder.Services.AddControllers(options =>
+{
+    options.ReturnHttpNotAcceptable = true;
+});
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    // 1. Definicja autoryzacji (pojawia siê przycisk Authorize)
+    // 1. Definicja autoryzacji JWT (Authorization: Bearer <token>)
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -67,7 +108,15 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Wklej poni¿ej swój wygenerowany token JWT (bez s³owa Bearer)."
     });
 
-    // 2. Wymaganie tokena dla chronionych endpointów (pojawiaj¹ siê k³ódki przy endpointach)
+    // 2. Definicja autoryzacji dla czujników (X-API-Key)
+    c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+    {
+        Name = "X-API-Key",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header,
+        Description = "Wklej klucz API czujnika otrzymany przy rejestracji (POST /api/sensors)."
+    });
+
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -79,17 +128,55 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            Array.Empty<string>() // Brak specyficznych ról na poziomie definicji Swaggera, obs³uguje to sam kod
+            Array.Empty<string>()
+        },
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "ApiKey"
+                }
+            },
+            Array.Empty<string>()
         }
     });
 });
 
-builder.Services.AddMediatR(cfg => {
+builder.Services.AddMediatR(cfg =>
+{
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
 });
 #endregion
+
 #region App Build
 var app = builder.Build();
+
+app.UseHttpsRedirection();
+
+// Nag³ówki bezpieczeñstwa wymagane przez testy automatyczne w grupie A4 (w tym Content-Security-Policy)
+app.Use(async (context, next) =>
+{
+    var db = context.RequestServices.GetService<AppDbContext>();
+    if (db != null)
+    {
+        db.Database.AutoTransactionBehavior = AutoTransactionBehavior.Never;
+    }
+    context.Response.Headers.TryAdd("Content-Security-Policy", "default-src 'self'; connect-src 'self' http://localhost:* https://localhost:*; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"); context.Response.Headers.TryAdd("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.TryAdd("X-Frame-Options", "DENY");
+    context.Response.Headers.TryAdd("Referrer-Policy", "strict-origin-when-cross-origin");
+    await next();
+});
+
+app.UseCors("AllowSpaFrontend");
+
+app.UseExceptionHandler();
+app.UseStatusCodePages();
+
+// Authentication musi byæ PRZED Authorization
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
@@ -97,54 +184,32 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-// Authentication musi byæ PRZED Authorization
-app.UseAuthentication();
-app.UseAuthorization();
-
 app.MapControllers();
 #endregion
 
-#region Authentication Endpoints (Minimal API)
-app.MapPost("/login", (LoginDto request) =>
+using (var scope = app.Services.CreateScope())
 {
-    if (request.Password != "123456") return Results.Unauthorized();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    string role = request.Username switch
+    db.Database.AutoTransactionBehavior = AutoTransactionBehavior.Never;
+
+    if (!await db.Users.AnyAsync())
     {
-        "admin" => "Admin",
-        "superadmin" => "SuperAdmin",
-        _ => null
-    };
-
-    if (role == null) return Results.Unauthorized();
-
-    var tokenHandler = new JwtSecurityTokenHandler();
-    var tokenDescriptor = new SecurityTokenDescriptor
-    {
-        Subject = new ClaimsIdentity(new[]
-        {
-            new Claim(ClaimTypes.Name, request.Username),
-            new Claim(ClaimTypes.Role, role)
-        }),
-        Expires = DateTime.UtcNow.AddHours(2),
-        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-    };
-
-    var token = tokenHandler.CreateToken(tokenDescriptor);
-    return Results.Ok(new { Token = tokenHandler.WriteToken(token) });
-});
-
-// Zabezpieczone endpointy testowe Minimal API
-app.MapGet("/only-admin", () => "Witaj Adminie!")
-   .RequireAuthorization(policy => policy.RequireRole("Admin", "SuperAdmin"));
-
-app.MapGet("/only-superadmin", () => "Witaj Super Adminie!")
-   .RequireAuthorization(policy => policy.RequireRole("SuperAdmin"));
-#endregion
-
-
-app.Run();
-
-
+        db.Users.AddRange(
+            new User
+            {
+                Username = "admin",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("haslo"),
+                Role = "Admin"
+            },
+            new User
+            {
+                Username = "superadmin",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                Role = "SuperAdmin"
+            }
+        );
+        await db.SaveChangesAsync();
+    }
+}
+await app.RunAsync();

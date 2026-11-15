@@ -5,17 +5,15 @@ using System.Drawing;
 
 namespace PW_ZAI_311.Controllers.Domain
 {
-    public record CreateMeasurementSerieCommand(string Name, float MaxValue, float MinValue, KnownColor? Color, string IconInfo) : IRequest<Guid>;
-    public class CreateMeasurementSerieCommandHandler : IRequestHandler<CreateMeasurementSerieCommand, Guid>
+    public record CreateMeasurementSerieCommand2(string Name, float MaxValue, float MinValue, string Color, string IconInfo) : IRequest<Guid>;
+    public class CreateMeasurementSerieCommandHandler : IRequestHandler<CreateMeasurementSerieCommand2, Guid>
     {
         private readonly AppDbContext _context;
         public CreateMeasurementSerieCommandHandler(AppDbContext context) => _context = context;
 
-        public async Task<Guid> Handle(CreateMeasurementSerieCommand request, CancellationToken cancellationToken)
+        public async Task<Guid> Handle(CreateMeasurementSerieCommand2 request, CancellationToken cancellationToken)
         {
-            Color? c = null;
-            if (request.Color.HasValue)
-                c = Color.FromKnownColor(request.Color.Value);
+
                 
             var measurementSerie = new MeasurementSerie
             {
@@ -24,7 +22,7 @@ namespace PW_ZAI_311.Controllers.Domain
                 Name = request.Name,
                 MaxValue = request.MaxValue,
                 MinValue = request.MinValue,
-                Color = c,
+                Color = request.Color,
                 IconInfo = request.IconInfo
             };
 

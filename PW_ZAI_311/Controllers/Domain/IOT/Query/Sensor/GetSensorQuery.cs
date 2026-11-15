@@ -4,7 +4,7 @@ using PW_ZAI_311.Entieties;
 
 namespace PW_ZAI_311.Controllers.Domain
 {
-    public record GetSensorQuery(Guid Id) : IRequest<SensorOutput>;
+    public record GetSensorQuery2(Guid Id) : IRequest<SensorOutput>;
 
     public class SensorOutput: BaseOutput
     {
@@ -16,7 +16,7 @@ namespace PW_ZAI_311.Controllers.Domain
         }
     }
 
-    public class GetSensorQueryHandler : IRequestHandler<GetSensorQuery, SensorOutput>
+    public class GetSensorQueryHandler : IRequestHandler<GetSensorQuery2, SensorOutput>
     {
         private readonly AppDbContext _context;
 
@@ -25,7 +25,7 @@ namespace PW_ZAI_311.Controllers.Domain
             _context = context; 
         }
 
-        public async Task<SensorOutput> Handle(GetSensorQuery request, CancellationToken cancellationToken)
+        public async Task<SensorOutput> Handle(GetSensorQuery2 request, CancellationToken cancellationToken)
         {
             var sensor = await _context.Sensors.FindAsync(new object[]{ request.Id }, cancellationToken);
             if (sensor == null) return null;

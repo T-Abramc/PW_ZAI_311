@@ -4,9 +4,9 @@ using PW_ZAI_311.Entieties;
 
 namespace PW_ZAI_311.Controllers.Domain
 {
-    public record CreateSensorCommand(string Name, Guid? MeasurementSerieId) : IRequest<Guid>;
+    public record CreateSensorCommand2(string Name, Guid? MeasurementSerieId) : IRequest<Guid>;
 
-public class CreateSensorCommandHandler : IRequestHandler<CreateSensorCommand, Guid>
+public class CreateSensorCommandHandler : IRequestHandler<CreateSensorCommand2, Guid>
     {
         private readonly AppDbContext _context;
 
@@ -15,7 +15,7 @@ public class CreateSensorCommandHandler : IRequestHandler<CreateSensorCommand, G
             _context = context;
         }
 
-        public async Task<Guid> Handle(CreateSensorCommand request, CancellationToken cancellationToken)
+        public async Task<Guid> Handle(CreateSensorCommand2 request, CancellationToken cancellationToken)
         {
             var  measurementSerie = await _context.Set<MeasurementSerie>().FindAsync(new object[] { request.MeasurementSerieId }, cancellationToken);
 

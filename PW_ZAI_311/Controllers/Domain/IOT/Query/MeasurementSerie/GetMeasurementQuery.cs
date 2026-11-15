@@ -48,31 +48,29 @@ namespace PW_ZAI_311.Controllers.Domain
         public string Name { get; set; }
         public float MaxValue { get; set; }
         public float MinValue { get; set; }
-        public Color? Color { get; set; }
-        public ColorOutput ColorString { get; set; }
+        public string Color { get; set; }
         public string IconInfo { get; set; }
 
         public MeasurementSerieOutput(Guid id) : base(id) { }
 
-        public MeasurementSerieOutput(Guid id, string name, float maxValue, float minValue, Color? color, string iconInfo) : this(id)
+        public MeasurementSerieOutput(Guid id, string name, float maxValue, float minValue, string color, string iconInfo) : this(id)
         {
             Name = name;
             MaxValue = maxValue;
             MinValue = minValue;
             Color = color;
-            ColorString = color.HasValue ? ColorString = new ColorOutput(Color.Value) : null;
             IconInfo = iconInfo;
         }
     }
 
-    public record GetMeasurementSerieQuery(Guid Id) : IRequest<MeasurementSerieOutput>;
+    public record GetMeasurementSerieQuery2(Guid Id) : IRequest<MeasurementSerieOutput>;
 
-    public class GetMeasurementSerieQueryHandler : IRequestHandler<GetMeasurementSerieQuery, MeasurementSerieOutput>
+    public class GetMeasurementSerieQueryHandler : IRequestHandler<GetMeasurementSerieQuery2, MeasurementSerieOutput>
     {
         private readonly AppDbContext _context;
         public GetMeasurementSerieQueryHandler(AppDbContext context) => _context = context;
 
-        public async Task<MeasurementSerieOutput> Handle(GetMeasurementSerieQuery request, CancellationToken cancellationToken)
+        public async Task<MeasurementSerieOutput> Handle(GetMeasurementSerieQuery2 request, CancellationToken cancellationToken)
         {
             var measurementSerie = await _context.Set<MeasurementSerie>().FindAsync(new object[] { request.Id }, cancellationToken);
             if (measurementSerie == null) return null;
