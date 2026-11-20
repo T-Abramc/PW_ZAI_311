@@ -68,10 +68,8 @@ namespace PW_ZAI_311
                 var loginRes = await adminClient.PostAsJsonAsync("/api/auth/login", new { username = "admin", password = "haslo" }, stoppingToken);
 
                 if (!loginRes.IsSuccessStatusCode)
-                {
-                    _logger.LogError("[F11 Seeder] Nie udało się zalogować na konto admina przez API (Status: {Status}).", loginRes.StatusCode);
                     return;
-                }
+                
 
                 var loginJson = await loginRes.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: stoppingToken);
                 string accessToken = loginJson.GetProperty("accessToken").GetString()!;
@@ -86,7 +84,6 @@ namespace PW_ZAI_311
 
                 foreach (var s in seriesToCreate)
                 {
-                    // 2. Tworzenie serii przez POST /api/series
                     var serieRes = await adminClient.PostAsJsonAsync("/api/series", new
                     {
                         name = s.Name,
@@ -102,19 +99,16 @@ namespace PW_ZAI_311
                     var serieJson = await serieRes.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: stoppingToken);
                     var seriesId = serieJson.GetProperty("id").GetGuid();
 
-                    // 3. Rejestracja czujnika przez POST /api/sensors i odebranie jednorazowego klucza API
                     var sensorRes = await adminClient.PostAsJsonAsync("/api/sensors", new
                     {
                         name = $"Czujnik IoT - {s.Name}",
                         seriesId = seriesId
                     }, stoppingToken);
-
                     if (!sensorRes.IsSuccessStatusCode) continue;
 
                     var sensorJson = await sensorRes.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: stoppingToken);
                     string plainApiKey = sensorJson.GetProperty("apiKey").GetString()!;
 
-                    // 4. Wysyłanie 18 wyników pomiarów (wymagane min. 15 w F11) przez osobnego klienta używającego WYŁĄCZNIE nagłówka X-API-Key
                     using var sensorClient = new HttpClient(new HttpClientHandler
                     {
                         ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
@@ -141,7 +135,6 @@ namespace PW_ZAI_311
 
                     _logger.LogInformation("[F11 Seeder] Utworzono serię '{Name}' i przesłano 18 pomiarów kluczem czujnika.", s.Name);
                 }
-
                 _logger.LogInformation("[F11 Seeder] Seedowanie F11 przez API zakończone sukcesem!");
             }
             catch (Exception ex)
