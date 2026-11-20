@@ -237,6 +237,9 @@ namespace PW_ZAI_311.Controllers
             }
         }
 
+        /// <summary>
+        /// Edycja Serii 
+        /// </summary>
         [Authorize]
         [HttpPut("{seriesId:guid}")]
         [Consumes("application/json")]
@@ -250,7 +253,7 @@ namespace PW_ZAI_311.Controllers
                 input.Name,
                 input.MaxValue,
                 input.MinValue,
-                input.ThisColor,
+                input.Color,
                 input.IconInfo,
                 input.Unit);
 
@@ -267,7 +270,7 @@ namespace PW_ZAI_311.Controllers
                     Name = input.Name,
                     MinValue = input.MinValue,
                     MaxValue = input.MaxValue,
-                    Color = input.ThisColor,
+                    Color = input.Color,
                     Icon = input.IconInfo,
                     Unit = input.Unit
                 })
@@ -576,13 +579,6 @@ namespace PW_ZAI_311.Controllers
     {
         [JsonIgnore]
         public Guid Id { get; set; }
-
-        [JsonPropertyName("color")]
-        public string ThisColor
-        {
-            get => base.Color;
-            set => base.Color = value;
-        }
     }
 
     public class SeriesDto
