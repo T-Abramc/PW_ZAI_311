@@ -36,7 +36,6 @@ namespace PW_ZAI_311
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // Czekamy 3 sekundy, aż IIS Express / Kestrel w pełni wystartuje i zacznie nasłuchiwać
             await Task.Delay(3000, stoppingToken);
 
             try
@@ -44,21 +43,16 @@ namespace PW_ZAI_311
                 using var scope = _serviceProvider.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                // Sprawdzamy, czy w bazie są już co najmniej 3 serie (pomijając serie testowe ZAI-TEST-)
                 var allSeries = await db.MeasurementSeries.ToListAsync(stoppingToken);
                 int userSeriesCount = allSeries.Count(s => s.Name != null && !s.Name.StartsWith("ZAI-TEST-"));
 
-                if (userSeriesCount >= 3)
-                    return;
-                
-
-                // Pobieramy aktualny adres URL, na którym uruchomiony jest serwer (np. https://localhost:44343)
                 var addresses = _server.Features.Get<IServerAddressesFeature>()?.Addresses;
                 var baseUrl = addresses?.FirstOrDefault(a => a.StartsWith("https")) ?? addresses?.FirstOrDefault() ?? "https://localhost:44343";
 
+                if (userSeriesCount >= 3)
+                    return;
                 _logger.LogInformation("[F11 Seeder] Rozpoczynam seedowanie danych F11 przez API pod adresem: {BaseUrl}", baseUrl);
 
-                // Ignorujemy błędy lokalnego certyfikatu self-signed SSL na localhost
                 var handler = new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
@@ -70,7 +64,6 @@ namespace PW_ZAI_311
                 if (!loginRes.IsSuccessStatusCode)
                     return;
                 
-
                 var loginJson = await loginRes.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: stoppingToken);
                 string accessToken = loginJson.GetProperty("accessToken").GetString()!;
                 adminClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);

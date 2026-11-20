@@ -1,8 +1,4 @@
-﻿// Plik: generator.mjs
-// Emulator czujnika IoT oraz seeder danych przykładowych (Wymagania F4, F11, F13, T11)
-// Wymaga: Node.js 20+ (brak zewnętrznych zależności)
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Obsługa lokalnego certyfikatu HTTPS dla localhost
+﻿process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; 
 
 const args = process.argv.slice(2);
 const getArg = (name, def) => {
@@ -13,10 +9,10 @@ const getArg = (name, def) => {
 const config = {
     url: (getArg("--url", process.env.API_URL || "https://localhost:44343")).replace(/\/$/, ""),
     apiKey: getArg("--api-key", process.env.SENSOR_API_KEY || ""),
-    mode: getArg("--mode", "history"),       // "history" (przeszłe) lub "live" (bieżące co interwał)
-    waveform: getArg("--waveform", "sine"),  // "sine" (sinusoida) lub "random" (losowy)
+    mode: getArg("--mode", "history"),       
+    waveform: getArg("--waveform", "sine"),  
     count: parseInt(getArg("--count", "15"), 10),
-    interval: parseInt(getArg("--interval", "60"), 10), // sekundy
+    interval: parseInt(getArg("--interval", "60"), 10), 
     min: parseFloat(getArg("--min", "15")),
     max: parseFloat(getArg("--max", "25")),
     seedF11: args.includes("--seed-f11"),
@@ -46,7 +42,6 @@ async function sendMeasurement(url, apiKey, value, timestampIso) {
     if (res.status === 201) {
         console.log(`[OK 201] Wysłano pomiar: wartość = ${value} | czas = ${timestampIso}`);
     } else if (res.status === 422 || res.status === 400) {
-        // Wymaganie F4: czytelny komunikat o odrzuceniu wyniku spoza przedziału min/max serii
         const problem = await res.json().catch(() => ({}));
         console.error(`[ODRZUCONO POMIAR - HTTP ${res.status}] Serwer odrzucił wartość ${value}! Powód: ${problem.detail || problem.title || "Wartość spoza przedziału min/max serii"}`);
     } else if (res.status === 401) {

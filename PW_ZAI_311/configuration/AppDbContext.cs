@@ -28,7 +28,6 @@ namespace PW_ZAI_311.configuration
             {
                 entity.ToCollection("Sensors");
                 entity.HasKey(x => x.Id);
-                // Ignorujemy właściwość nawigacyjną i alias, aby EF MongoDB nie zagnieżdżał dokumentu serii
                 entity.Ignore(x => x.MeasurementSerie);
                 entity.Ignore(x => x.Name);
                 entity.HasIndex(x => x.ApiKeyHash);
@@ -40,10 +39,8 @@ namespace PW_ZAI_311.configuration
             {
                 entity.ToCollection("Measurements");
                 entity.HasKey(x => x.Id);
-                // Ignorujemy właściwości nawigacyjne (relacja odbywa się po SensorId i MeasurementSerieId)
                 entity.Ignore(x => x.Sensor);
                 entity.Ignore(x => x.MeasurementSerie);
-                // Indeksy dla szybkiego filtrowania po czasie i serii (Wymaganie T4 / F5)
                 entity.HasIndex(x => x.DateTime);
                 entity.HasIndex(x => x.MeasurementSerieId);
                 entity.HasIndex(x => x.SensorId);

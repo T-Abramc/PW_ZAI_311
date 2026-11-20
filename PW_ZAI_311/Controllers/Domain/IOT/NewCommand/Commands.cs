@@ -137,7 +137,7 @@
                     _context.Logs.Add(errorLog);
                     await _context.SaveChangesAsync(cancellationToken);
 
-                    return null; // Kontroler na podstawie null zwraca 401 Unauthorized
+                    return null;
                 }
 
                 var keyString = _configuration["Jwt:Key"] ?? "TwojBardzoTajnyKluczKtoryMaMinimum32ZnakiDlugosci!";
