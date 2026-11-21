@@ -10,7 +10,7 @@ import 'package:flutter_front_pw/print_bridge.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   RendererBinding.instance.ensureSemantics();
-  final apiClient = ApiClient(baseUrl: 'https://localhost:44343');
+  final apiClient = ApiClient(baseUrl: 'https://pwzai311-pomiary.azurewebsites.net');
   await apiClient.initSession();
   runApp(SensorDashboardApp(apiClient: apiClient));
 }

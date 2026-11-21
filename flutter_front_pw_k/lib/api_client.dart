@@ -18,7 +18,7 @@ class ApiClient {
   String _baseUrl;
   String? _accessToken;
 
-  ApiClient({String baseUrl = 'https://localhost:44343'})
+  ApiClient({String baseUrl = 'https://pwzai311-pomiary.azurewebsites.net'})
       : _baseUrl = _normalizeUrl(baseUrl);
 
   String get baseUrl => _baseUrl;
