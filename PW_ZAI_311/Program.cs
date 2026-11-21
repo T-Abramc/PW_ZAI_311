@@ -148,15 +148,13 @@ builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
 });
-builder.Services.AddHostedService<ApiAutoSeeder>();
+//builder.Services.AddHostedService<ApiAutoSeeder>();
 #endregion
 
 #region App Build
 var app = builder.Build();
-
 app.UseHttpsRedirection();
 
-// Nag³ówki bezpieczeñstwa wymagane przez testy automatyczne w grupie A4 (w tym Content-Security-Policy)
 app.Use(async (context, next) =>
 {
     var db = context.RequestServices.GetService<AppDbContext>();
@@ -164,9 +162,15 @@ app.Use(async (context, next) =>
     {
         db.Database.AutoTransactionBehavior = AutoTransactionBehavior.Never;
     }
-    context.Response.Headers.TryAdd("Content-Security-Policy", "default-src 'self'; connect-src 'self' http://localhost:* https://localhost:*; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"); context.Response.Headers.TryAdd("X-Content-Type-Options", "nosniff");
+
+    context.Response.Headers.TryAdd(
+        "Content-Security-Policy",
+        "default-src 'self'; connect-src 'self' https: http://localhost:* https://localhost:*; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://www.gstatic.com; worker-src 'self' blob:;"
+    );
+    context.Response.Headers.TryAdd("X-Content-Type-Options", "nosniff");
     context.Response.Headers.TryAdd("X-Frame-Options", "DENY");
     context.Response.Headers.TryAdd("Referrer-Policy", "strict-origin-when-cross-origin");
+
     await next();
 });
 
@@ -179,13 +183,38 @@ app.UseStatusCodePages();
 app.UseAuthentication();
 app.UseAuthorization();
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseDefaultFiles();
+app.UseStaticFiles(new StaticFileOptions
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    ServeUnknownFileTypes = true
+});
 
 app.MapControllers();
+
+app.MapWhen(
+    context => !context.Request.Path.StartsWithSegments("/api") &&
+               !context.Request.Path.StartsWithSegments("/swagger"),
+    spaApp =>
+    {
+        spaApp.Run(async context =>
+        {
+            var webRoot = app.Environment.WebRootPath;
+            var indexPath = string.IsNullOrEmpty(webRoot) ? null : Path.Combine(webRoot, "index.html");
+            if (indexPath != null && File.Exists(indexPath))
+            {
+                context.Response.ContentType = "text/html";
+                await context.Response.SendFileAsync(indexPath);
+            }
+            else
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsync("Frontend nie zostal jeszcze wgrany do folderu wwwroot.");
+            }
+        });
+    });
 #endregion
 
 using (var scope = app.Services.CreateScope())
